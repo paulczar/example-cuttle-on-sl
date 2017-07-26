@@ -1,0 +1,90 @@
+---
+common:
+  ssh:
+    allow_from:
+      - "0.0.0.0/0"
+
+bastion:
+  backdoor_user: ~
+  ssh_port: 22
+  force_commands:
+    - /usr/bin/ttyspy
+    - /usr/bin/ssh-mosh-filter
+
+_users:
+  manage_authorized_keys: true
+
+twofa:
+  enabled: "{{ twofa_enabled|default('false')|bool }}"
+  method: google
+
+user_groups:
+  default:
+    system: yes
+  admin:
+    system: yes
+    ssh_keys:
+      enable_passphrase: false
+      fingerprint: "64:f3:60:f0:33:ed:8b:a3:af:33:c3:c1:e6:c8:41:bf"
+      private: |
+        -----BEGIN RSA PRIVATE KEY-----
+        MIIEowIBAAKCAQEA34Tz/TDvjmcZkDiWmbm6Zz4jx1bl4rcEiSpbxYRqyXvxbGkG
+        e+YoDyy5s+M/tKaP+kAYDbXwJM6NnLq8q4YsEeqszjDE3+qgH54TE8EoT1VoPDkl
+        iUiE3a0d1DLZT8oX7x8y+q+39qQFN2sjTf39VgMpbWy6zOH7Ok9hpJXMItezuX9B
+        sMOfHE3TgZdYnRlc9tRmI58+igw1E2reNqHBxWu2c4FdydoakTXgUmcLLheKW0xC
+        m0NG9Cy5oAdq79ZJruuQQxTy9W71xm6W4EreDMCZrR3JWBvH2Ahv2JcDdj8BEB2g
+        iYzwzSqM4D3l44jza2BULgoXf58JS/8B7LkryQIDAQABAoIBAE6ba1M3yofCKnNV
+        82DMuIlmiR6pqN86jhXPF8c28nc5Z4ZAyU75ek0b5ZMl8FmP2kKgF9V6jqHjIlpk
+        McYAwa7rYSqCbDpzQSzdYsgnvg1oc+f6EQFex5tOLpdZ6qLs583oov0WnxPWSx9a
+        Rmg/UsDVC9S30FoNf1TaZfSD2e7GVOCohXSXheQnRs5AkovlieoBy8NbaRj9+ey3
+        hTsbtAsMk7WiazHpP/Fl7LwAXSHRgtFl+s1dbSYbpBLWdabB54j7m75x/hJRWzlW
+        zgmTdGSpLOnPeKe9TJtIkWzkqx0+XMbk1D4FUZVpo2D8whpHJxZNUdzY1UpqTu6M
+        frGsQIECgYEA8vqxh7Pw3S32TyMmkpL6oNziccyKe7U+xurulmccrPD6dhpMjOXR
+        0ErPBIklxiUsAEZNIdBP4G2Of1xU0OWnWH9Xpk69FI7K7/XPmOoNeC3lYp08IUtb
+        jvs2C7F6ir+cSpEjU1PrT9hIKTk6XO13Nx291pd6xxUz1UUfdyxv220CgYEA639M
+        jEH9BsFSghYHM41GCMp2/+xfLLN9sTdPB7b8ElsOMD2Xne1QJ9uHfXyDi5Ba07aI
+        GbxgIoKcVlxIf/JJFdomeiXzf3PjDOTE8Pv/wMVhjQsfkCfgEunqVKF9amLTeTbl
+        Ype2modJXe+yuo4AqN8inz3CvTsP15rfZRh9XE0CgYA6xnOdPOS9y/lx6THScOVZ
+        djT8jBrPk+csnPW7whOIrf4YBYKQ7qLTPNVY5ogRpzo+ksLjtA0uX7IBkucdZQAX
+        Ay7DlvZb+7KRWyeteKhrcsazFQ/PifgK3S+Uooje+TyoOPWPmZQpS0shVauNgQ++
+        cF5Ug236rGFObJsQ69ne/QKBgAaxxLRL/+xcPIM0Kxo9DtubHczipEX6CD2sa9O1
+        UO8YpYubhJ7Zqyim5fAcRQUHon1YOAA7SaRRgC44S1tPwOIdJHDeeVCLM84fBrYv
+        A7MwKTjAMzJ+37DJ835aZN1MV+SfOeAWnftAk0ZXVQZWmRAz36EVOV71udqQLX+L
+        Na0VAoGBAOyAT/XPSDjMaWMxkf0/cuGrPDotG/2qlPkFzykTurYRXfB+gs/0wM9q
+        V64jR8VQpxfyljtdEEIbNnYiiHcu3WGDK6zu0w3LzYFdKawKxJezL7vbC3X4qgil
+        3KsipSty93s+kZ265SMqby2itnryoMSURt5PniUFlBq5BBrzeZde
+        -----END RSA PRIVATE KEY-----
+      public: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDfhPP9MO+OZxmQOJaZubpnPiPHVuXitwSJKlvFhGrJe/FsaQZ75igPLLmz4z+0po/6QBgNtfAkzo2curyrhiwR6qzOMMTf6qAfnhMTwShPVWg8OSWJSITdrR3UMtlPyhfvHzL6r7f2pAU3ayNN/f1WAyltbLrM4fs6T2Gklcwi17O5f0Gww58cTdOBl1idGVz21GYjnz6KDDUTat42ocHFa7ZzgV3J2hqRNeBSZwsuF4pbTEKbQ0b0LLmgB2rv1kmu65BDFPL1bvXGbpbgSt4MwJmtHclYG8fYCG/YlwN2PwEQHaCJjPDNKozgPeXjiPNrYFQuChd/nwlL/wHsuSvJ dummmy-key-2
+
+users:
+  admin:
+    comment: "Admin account"
+    primary_group: default
+    groups:
+      - admin
+    public_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDG/Af9CVo0ZasmKXqB8Xc/+PaUAx/pKLpY7k1UruzrMOIYk9HvT6dl5YF06CAeIvT4kHqrPrvAEl5woyiCVWGEuyprLinjirQQTLS1sW5JOvPtZi/0jWECb7b1MROsBXxfbW5uUElUd6OtuK9fux4mmNLJsWq8NBWF7rabEpDqHfcidIlM4AmGeZpgvs1grA6ytsKTg5JVSgkISD4KGY0w83surnFkc8cPDxdmFaPLjzmPI9MXI2rm1XsYscwvRYykR63pdnKB+fn3cIbDjPCsp68duwonZjr+5P8hgdTZe6iUfDMXy2+RCkHnANQ+088XHiDJQ3DRlWdc0JWhhRSt Cuttle Bastion Admin
+    uid: 1000
+
+  bobsmith:
+    comment: "Bob Smith; bobsmith@example.com"
+    primary_group: default
+    groups:
+      - admin
+    public_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key
+    uid: 1002
+    google_2fa:
+      secret_key: JEPXZJ3HSYNHMDQO
+      verification_code: 411221
+      emergency_codes: [20698313,36545541,21001349,81954311,82144245]
+
+yama_utils:
+  enabled: true
+
+support_tools:
+  enabled: false
+
+sshagentmux:
+  enabled: true
+  auth_socket: /var/run/authorization_proxy.sock

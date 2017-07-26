@@ -1,0 +1,17 @@
+---
+- name: Destroy servers
+  hosts: localhost
+  gather_facts: False
+  vars:
+    sl_datacenter: dal10
+
+  tasks:
+    - name: delete server
+      sl_vm:
+        hostname: "{{ item }}"
+        domain: cuttle-demo.com
+        datacenter: "{{ sl_datacenter }}"
+        state: absent
+      with_items:
+        - bastion01
+        - ttyspy01

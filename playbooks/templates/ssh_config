@@ -1,0 +1,13 @@
+Host *
+  ServerAliveInterval 300
+  ServerAliveCountMax 10
+  ForwardAgent yes
+{% for host in groups[group_name] %}
+Host {{ hostvars[host]['hostname'] }}
+  Hostname {{ hostvars[host]['primaryIpAddress'] }}
+{% if host in groups['bastion']|default([]) or host in groups['ttyspy-server']|default([]) %}
+  User root
+{% else %}
+  User {{ admin_user }}
+{% endif %}
+{% endfor %}

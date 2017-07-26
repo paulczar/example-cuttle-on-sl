@@ -1,0 +1,35 @@
+---
+- name: ensure connectivity to all nodes
+  hosts: cuttle-env-bastion
+  gather_facts: false
+  vars:
+    etc_hosts: ~
+  pre_tasks:
+    - name: check if python is installed
+      raw: test -e /usr/bin/python
+      register: python_installed
+      changed_when: false
+      failed_when: false
+    - name: install python
+      raw: (apt-get -y update && apt-get install -y python)
+      when: python_installed.rc != 0
+
+  tasks:
+    - name: ansible setup
+      action: setup
+      tags: ['ping']
+  any_errors_fatal: true
+  max_fail_percentage: 0
+
+- name: print out ssh_config
+  hosts: cuttle-env-bastion
+  gather_facts: true
+  vars:
+    group_name: cuttle-env-bastion
+    etc_hosts: ~
+  tasks:
+    - template:
+        src: "ssh_config"
+        dest: ../cuttle-env-bastion/ssh_config
+      delegate_to: localhost
+      run_once: true
