@@ -1,0 +1,31 @@
+---
+- name: create servers
+  hosts: localhost
+  gather_facts: False
+  vars:
+    sl_datacenter: dal09
+    sl_ssh_key: 932143
+    sl_vlan: 1919743
+    etc_hosts: ~
+
+  tasks:
+    - name: create server
+      sl_vm:
+        hostname: "{{ item }}"
+        domain: "cz.com" 
+        datacenter: "{{ sl_datacenter|default('dal09') }}"
+        tags: "cz"
+        hourly: True
+        private: False
+        dedicated: False
+        local_disk: True
+        cpus: 2
+        memory: 4096
+        disks: [25]
+        os_code: UBUNTU_LATEST
+        private_vlan: "{{ sl_vlan|default(omit) }}"
+        wait: no
+        ssh_keys: "{{ sl_ssh_key|default(omit) }}"
+      with_items:
+        - cz-test-vm 
+

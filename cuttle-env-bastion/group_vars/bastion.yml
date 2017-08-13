@@ -64,6 +64,7 @@ users:
       - admin
     public_keys:
       - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDG/Af9CVo0ZasmKXqB8Xc/+PaUAx/pKLpY7k1UruzrMOIYk9HvT6dl5YF06CAeIvT4kHqrPrvAEl5woyiCVWGEuyprLinjirQQTLS1sW5JOvPtZi/0jWECb7b1MROsBXxfbW5uUElUd6OtuK9fux4mmNLJsWq8NBWF7rabEpDqHfcidIlM4AmGeZpgvs1grA6ytsKTg5JVSgkISD4KGY0w83surnFkc8cPDxdmFaPLjzmPI9MXI2rm1XsYscwvRYykR63pdnKB+fn3cIbDjPCsp68duwonZjr+5P8hgdTZe6iUfDMXy2+RCkHnANQ+088XHiDJQ3DRlWdc0JWhhRSt Cuttle Bastion Admin
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDfhPP9MO+OZxmQOJaZubpnPiPHVuXitwSJKlvFhGrJe/FsaQZ75igPLLmz4z+0po/6QBgNtfAkzo2curyrhiwR6qzOMMTf6qAfnhMTwShPVWg8OSWJSITdrR3UMtlPyhfvHzL6r7f2pAU3ayNN/f1WAyltbLrM4fs6T2Gklcwi17O5f0Gww58cTdOBl1idGVz21GYjnz6KDDUTat42ocHFa7ZzgV3J2hqRNeBSZwsuF4pbTEKbQ0b0LLmgB2rv1kmu65BDFPL1bvXGbpbgSt4MwJmtHclYG8fYCG/YlwN2PwEQHaCJjPDNKozgPeXjiPNrYFQuChd/nwlL/wHsuSvJ dummmy-key-2
     uid: 1000
 
   bobsmith:

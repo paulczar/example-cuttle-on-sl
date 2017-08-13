@@ -1,0 +1,64 @@
+---
+cuttle_force_gather_facts: true
+
+common:
+  firewall:
+    friendly_networks: []
+  sysdig:
+    enabled: true
+
+sensu:
+  client:
+    enable_metrics: false
+    enable_checks: true
+    rabbitmq:
+      host: "{{ hostvars[groups['rabbitmq'][0]][private_interface]['ipv4']['address']|default('127.0.0.1') }}"
+      username: sensu
+      password: sensu
+      vhost: /sensu
+      hostgroup: sensu
+
+collectd:
+  enabled: False
+
+etc_hosts: "{{ hostvars|etc_hosts(groups, group='cuttle', interface='primaryBackendIpAddress') }}"
+
+monitoring_common:
+  graphite:
+    cluster_prefix: "stats.sc.{{ datacenter.name }}"
+    host_prefix: "stats.sc.{{ datacenter.name }}.{{ ansible_nodename|replace('.', '_') }}"
+
+netdata:
+  enabled: true
+  config:
+    backend:
+      enabled: "yes"
+      type: graphite
+      destination: "{{ hostvars[groups['graphite'][0]]['primaryBackendIpAddress'] }}:2003"
+      data_source: as collected
+      prefix: "{{ monitoring_common.graphite.cluster_prefix }}"
+      hostname: "{{ ansible_nodename }}"
+      update_every: 10
+      buffer_on_failures: 10
+      timeout_ms: 20000
+      send_charts_matching: "*"
+  firewall:
+    allow_from:
+      - "{{ private_ipv4.network }}/{{ private_ipv4.netmask }}"
+
+database:
+  host: "{{ hostvars[groups['percona'][0]][private_interface]['ipv4']['address'] }}"
+  port: 3306
+  users:
+    graphite:
+      databases:
+        - graphite
+      username: graphite
+      password: graphite
+      host: "{{ hostvars[groups['percona'][0]][private_interface]['ipv4']['network'] }}/{{ hostvars[groups['percona'][0]][private_interface]['ipv4']['netmask'] }}"
+    grafana:
+      databases:
+        - grafana
+      username: grafana
+      password: grafana
+      host: "{{ hostvars[groups['percona'][0]][private_interface]['ipv4']['network'] }}/{{ hostvars[groups['percona'][0]][private_interface]['ipv4']['netmask'] }}"

@@ -1,0 +1,134 @@
+---
+manage_disks:
+  enabled: true
+  defaults:
+    pesize: 4
+  volume_groups:
+    - name: mirror
+      pvs:
+        - /dev/xvdc
+  logical_volumes:
+    - name: data
+      volume_group: mirror
+      size: 95g
+      filesystem: ext4
+      filesystem_opts:
+      mount_point: /opt/mirror
+      mount_opts: defaults,noatime
+
+apache:
+  listen:
+    - 80
+    - 443
+    - 127.0.0.1:8080
+    - 127.0.0.1:8085
+
+apt_mirror:
+  path: /opt/mirror/apt
+  htpasswd_location: /opt/mirror/apt
+  debmirror:
+    repositories:
+      ddebs:
+        host: ddebs.ubuntu.com
+        path: /
+        method: http
+        exclude_regex: '.'
+        include_regex: 'linux/linux-image-.*generic-dbgsym'
+        arch: amd64,i386
+        distributions: 'xenial,xenial-security,xenial-updates'
+        sections: 'main,restricted,universe,multiverse'
+        key_url: http://ddebs.ubuntu.com/dbgsym-release-key.asc
+      sensu:
+        host: repositories.sensuapp.org
+        path: apt/
+        method: http
+        arch: amd64,i386
+        distributions: sensu
+        sections: main
+        key_url: http://repositories.sensuapp.org/apt/pubkey.gpg
+  apache:
+    ip: 127.0.0.1
+    port: 8085
+    ssl:
+      enabled: false
+
+pypi_mirror:
+  virtualenv: '/opt/mirror/pypi/app'
+  mirror_location: '/opt/mirror/pypi/mirror'
+  htpasswd_location: '/opt/mirror/pypi/etc'
+  cron: false
+  apache:
+    enabled: false
+
+gem_mirror:
+  ip: 127.0.0.1
+  port: 9292
+  apache:
+    enabled: false
+  home: '/opt/mirror/gem'
+  config_location: '/opt/mirror/gem/config'
+  mirror_location: '/opt/mirror/gem/files'
+
+file_mirror:
+  mirror_location: '/opt/mirror/file'
+  files:
+    - name: 'ubuntu-14.04-server-cloudimg-amd64.manifest'
+      path: 'ubuntu'
+      url: 'http://cloud-images.ubuntu.com/releases/14.04/release/ubuntu-14.04-server-cloudimg-amd64.manifest'
+      #sha256sum: 88a864aae6f67ec7c5c5baeda973ee25054c5fcfd570acbe25ef4c655e8b01ee
+  auth: []
+#    - path: ubuntu
+#      username: ubuntu
+#      password: ubuntu
+  apache:
+    ip: 127.0.0.1
+    port: 8088
+    ssl:
+      enabled: false
+
+squid:
+  port: 3128
+  allowed_networks:
+    - 0.0.0.0/0
+  proxy_domains:
+    - github.com
+  blacklist_packages: []
+  cache_dir:
+    size: 40000
+
+control_dashboard:
+  listen:
+    ip: 127.0.0.1
+    port: 8080
+  locations:
+    apt:
+      proxy: "http://127.0.0.1:8085/"
+      url: "/apt/"
+    gem:
+      proxy: "http://127.0.0.1:9292/"
+      url: "/gem/"
+    pypi:
+      proxy: "http://127.0.0.1:4040/"
+      url: "/pypi/"
+      config:
+        - FileETag: MTime Size
+        - Header: set Cache-Control public
+        - RequestHeader: set X-outside-url %{REQUEST_SCHEME}s://%{HTTP_HOST}s/pypi
+        - RequestHeader: set X-Real-IP %{REMOTE_ADDR}s
+        - ProxyPreserveHost: 'On'
+
+    file:
+      proxy: "http://127.0.0.1:8088/"
+      url: "/file/"
+
+apache_auth:
+  method: basic
+  vhost_name: control-basic
+  listen_ip: "*"
+  listen_port: 80
+  listen_ssl_port: 443
+  proxy_to: http://127.0.0.1:8080/
+  basic:
+    users:
+      - username: admin
+        password: admin

@@ -1,5 +1,11 @@
 # Deploy modern infrastructure to SL using Cuttle
 
+We will use cuttle to deploy two distinct environments into softlayer.  
+
+The first will be the bastion environment consisting of a bastion and a console log server,
+the second will be the rest of the infrastructure that will be accessed strictly via the bastion.
+
+
 ## Prepare local environment
 
 Set up local environment by cloning down both the environment and cuttle git repos:
@@ -74,7 +80,7 @@ Run the playbook to create the bastion and ttyspy servers:
 
 
 ```bash
-$ ansible-playbook environment/playbooks/create_bastion.yml --tags
+$ ansible-playbook playbooks/create_bastion_vms.yml
 PLAY [Build Bastions] ******************************************************************************************************************************************************************************************
 
 TASK [Build Bastion server] ************************************************************************************************************************************************************************************
@@ -123,4 +129,35 @@ command to deploy our `bastion` and `ttyspy` servers.
 ```bash
 $ ursula ../cuttle-infra-on-sl/cuttle-env-bastion site.yml \
     --limit cuttle-env-bastion --ursula-user root
+```
+
+## Deploy Cuttle Example Environment
+
+Run the playbook to create the infrastructure servers:
+
+
+```bash
+$ ansible-playbook playbooks/create_infra_vms.yml
+PLAY [Build ...] ******************************************************************************************************************************************************************************************
+
+TASK [Build ... server] ************************************************************************************************************************************************************************************
+changed: [localhost] => (item=...)
+...
+```
+
+Run the base bootstrap playbook:
+
+```bash
+$ ansible-playbook -u root -i cuttle-env-infra/hosts playbooks/bootstrap-infra.yml -e "bastion=xxxxx"
+PLAY [Build ...] ******************************************************************************************************************************************************************************************
+
+TASK [Build ... server] ************************************************************************************************************************************************************************************
+changed: [localhost] => (item=...)
+...
+```
+
+Run just the common role to kill off our remote root:
+
+```
+ursula --ursula-user=root ../cuttle-infra-on-sl/cuttle-env-infra site.yml --tags=common --limit cuttle-env-infra
 ```

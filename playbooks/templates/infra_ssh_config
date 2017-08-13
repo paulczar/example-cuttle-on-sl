@@ -1,0 +1,15 @@
+Host *
+  ServerAliveInterval 300
+  ServerAliveCountMax 10
+  ForwardAgent yes
+
+Host bastion01
+  Hostname {{ bastion }}
+  User {{ admin_user }}
+
+{% for host in groups[group_name] %}
+Host {{ hostvars[host]['hostname'] }} {{ hostvars[host]['primaryIpAddress'] }}
+  Hostname {{ hostvars[host]['secondaryIpAddress'] }}
+  User {{ admin_user }}
+   ProxyCommand ssh -W %h:%p admin@{{ bastion }}
+{% endfor %}

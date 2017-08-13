@@ -50,6 +50,9 @@ user_groups:
   admin:
     system: yes
 
+_users:
+  manage_authorized_keys: true
+
 users:
   admin:
     comment: "Admin account"
@@ -57,27 +60,11 @@ users:
     groups: [admin]
     public_keys:
       - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDfhPP9MO+OZxmQOJaZubpnPiPHVuXitwSJKlvFhGrJe/FsaQZ75igPLLmz4z+0po/6QBgNtfAkzo2curyrhiwR6qzOMMTf6qAfnhMTwShPVWg8OSWJSITdrR3UMtlPyhfvHzL6r7f2pAU3ayNN/f1WAyltbLrM4fs6T2Gklcwi17O5f0Gww58cTdOBl1idGVz21GYjnz6KDDUTat42ocHFa7ZzgV3J2hqRNeBSZwsuF4pbTEKbQ0b0LLmgB2rv1kmu65BDFPL1bvXGbpbgSt4MwJmtHclYG8fYCG/YlwN2PwEQHaCJjPDNKozgPeXjiPNrYFQuChd/nwlL/wHsuSvJ dummmy-key-2
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDG/Af9CVo0ZasmKXqB8Xc/+PaUAx/pKLpY7k1UruzrMOIYk9HvT6dl5YF06CAeIvT4kHqrPrvAEl5woyiCVWGEuyprLinjirQQTLS1sW5JOvPtZi/0jWECb7b1MROsBXxfbW5uUElUd6OtuK9fux4mmNLJsWq8NBWF7rabEpDqHfcidIlM4AmGeZpgvs1grA6ytsKTg5JVSgkISD4KGY0w83surnFkc8cPDxdmFaPLjzmPI9MXI2rm1XsYscwvRYykR63pdnKB+fn3cIbDjPCsp68duwonZjr+5P8hgdTZe6iUfDMXy2+RCkHnANQ+088XHiDJQ3DRlWdc0JWhhRSt Cuttle Bastion Admin
     uid: 1000
 
 sshagentmux:
   enabled: False
-
-database:
-  host: 172.16.0.17
-  port: 3306
-  users:
-    graphite:
-      databases:
-        - graphite
-      username: graphite
-      password: graphite
-      host: '172.16.0.%'
-    grafana:
-      databases:
-        - grafana
-      username: grafana
-      password: grafana
-      host: '172.16.0.%'
 
 serverspec:
   enabled: True
@@ -87,66 +74,14 @@ sensu:
     enable_metrics: true
     enable_checks: true
 
-openid_proxy:
-  locations:
-    root:
-      path: "/"
-      auth_type: "openid-connect"
-    sensu:
-      proxy: "http://172.16.0.15:3000/"
-      auth_type: "openid-connect"
-  firewall:
-    - port: 80
-      protocol: tcp
-      src:
-        - "{{ public_ipv4.network }}/{{ public_ipv4.netmask }}"
-    - port: 443
-      protocol: tcp
-      src:
-        - "{{ public_ipv4.network }}/{{ public_ipv4.netmask }}"
-
 logging:
   enabled: true
   follow:
     global_fields:
       customer_id: "0"
-      cluster_name: "vagrant"
+      cluster_name: "cuttle_infrastructure"
   forward:
-    host: 172.16.0.13
-
-logstash:
-  filters:
-    - template: filter-drop-empty
-    - template: filter-tags
-    - template: filter-syslog
-    - template: filter-openstack
-  outputs:
-    - name: elasticsearch
-      config:
-        hosts: "127.0.0.1:9200"
-        index: logstash-%{+YYYY.MM.dd}
-        manage_template: false
-  firewall:
-    - port: 1514
-      protocol: tcp
-      src:
-        - "{{ private_ipv4.network }}/{{ private_ipv4.netmask }}"
-        - "{{ public_ipv4.network }}/{{ public_ipv4.netmask }}"
-    - port: 1515
-      protocol: tcp
-      src:
-        - "{{ private_ipv4.network }}/{{ private_ipv4.netmask }}"
-        - "{{ public_ipv4.network }}/{{ public_ipv4.netmask }}"
-    - port: 4560
-      protocol: tcp
-      src:
-        - "{{ private_ipv4.network }}/{{ private_ipv4.netmask }}"
-        - "{{ public_ipv4.network }}/{{ public_ipv4.netmask }}"
-    - port: 4561
-      protocol: tcp
-      src:
-        - "{{ private_ipv4.network }}/{{ private_ipv4.netmask }}"
-        - "{{ public_ipv4.network }}/{{ public_ipv4.netmask }}"
+    host: "{{ hostvars[groups['logstash'][0]]['primaryBackendIpAddress']|default('127.0.0.1') }}"
 
 apt_repos:
   docker:
@@ -197,32 +132,6 @@ dnsmasq:
   server: 127.0.0.1
   dns:
     hosts: []
-
-pypi_mirror:
-  cron: false
-
-kibana:
-  force_config: true
-
-elasticsearch:
-  restart_on_config: true # enable in dev for easier testing, disable in prod
-
-grafana:
-  dashboards:
-    path: /usr/share/grafana/public/dashboards
-    public:
-      enabled:
-        - bbc-basic-host.json
-
-percona:
-  root_password: asdf
-  galera_version: 3.x
-  client_version: 5.6
-  server_version: 5.6
-  sst_auth_user: sst_admin
-  sst_auth_password: asdf
-  wsrep_cluster_name: example-sitecontroller
-  ip: "{{ hostvars[inventory_hostname][private_interface]['ipv4']['address'] }}"
 
 git_repos:
   ursula: https://github.com/blueboxgroup/ursula.git

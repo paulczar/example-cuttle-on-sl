@@ -1,0 +1,28 @@
+Host *
+  ServerAliveInterval 300
+  ServerAliveCountMax 10
+  ForwardAgent yes
+
+Host bastion01
+  Hostname 169.44.87.8
+  User admin
+
+Host mirror01 169.44.87.9
+  Hostname 10.173.49.166
+  User admin
+  ProxyCommand ssh -W %h:%p admin@169.44.87.8
+
+Host elk01 169.44.87.10
+  Hostname 10.173.49.167
+  User admin
+  ProxyCommand ssh -W %h:%p admin@169.44.87.8
+
+Host elk02 169.44.87.5
+  Hostname 10.173.49.182
+  User admin
+  ProxyCommand ssh -W %h:%p admin@169.44.87.8
+
+Host monitor01 169.44.87.4
+  Hostname 10.173.49.181
+  User admin
+  ProxyCommand ssh -W %h:%p admin@169.44.87.8

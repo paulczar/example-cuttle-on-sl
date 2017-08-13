@@ -1,0 +1,87 @@
+---
+kibana:
+  config:
+    elasticsearch_url: "http://127.0.0.1:9200"
+  firewall:
+    - port: 5601
+      protocol: tcp
+      src:
+        - "{{ private_ipv4.network }}/{{ private_ipv4.netmask }}"
+elasticsearch:
+  config:
+    cluster.name: "elk_{{ stack_name }}"
+    discovery.zen.minimum_master_nodes: "{{ (groups['elasticsearch']|length / 2)|int + (groups['elasticsearch']|length % 2 > 0)|int }}"
+    discovery.zen.ping.unicast.hosts: "['{{ hostvars[groups['elk'][0]]['primaryBackendIpAddress'] }}','{{ hostvars[groups['elk'][1]]['primaryBackendIpAddress'] }}']"
+    gateway.expected_nodes: "{{ groups['elasticsearch']|length }}"
+    gateway.recover_after_nodes: "{{ (groups['elasticsearch']|length / 2)|int + (groups['elasticsearch']|length % 2 > 0)|int }}"
+    cluster.routing.allocation.disk.watermark.low: 10gb
+    cluster.routing.allocation.disk.watermark.high: 2gb
+    node.name: "{{ ansible_hostname }}"
+    node.master: true
+    node.data: true
+    path.conf: /etc/elasticsearch
+    path.data: /var/lib/elasticsearch
+    path.logs: /var/log/elasticsearch
+    network.host: 0.0.0.0
+    http.bind_host: 0.0.0.0
+    network.publish_host: "{{ private_ipv4.address }}"
+  curator:
+    tasks:
+      - action: delete
+        older: 2
+        hour: 2
+      - action: close
+        older: 2
+        hour: 2
+        minute: 15
+      - action: optimize
+        params: "--max_num_segments 1"
+        older: 2
+        hour: 3
+        minute: 0
+      - action: bloom
+        state: absent
+  heap_size: 2048m
+  restart_on_config: true
+  firewall:
+    - port: 9200
+      src:
+        - "{{ hostvars[groups['elk'][0]]['primaryBackendIpAddress'] }}/32"
+        - "{{ hostvars[groups['elk'][1]]['primaryBackendIpAddress'] }}/32"
+    - port: 9300
+      src:
+        - "{{ hostvars[groups['elk'][0]]['primaryBackendIpAddress'] }}/32"
+        - "{{ hostvars[groups['elk'][1]]['primaryBackendIpAddress'] }}/32"
+
+logstash:
+  inputs:
+    - name: syslog
+      config:
+        port: 1514
+        type: syslog
+    - name: beats
+      config:
+        port: 4561
+        ssl: false
+        ssl_certificate: '/etc/ssl/certs/logstash.crt'
+        ssl_key: '/etc/ssl/private/logstash.key'
+        type: 'beats'
+  filters:
+    - template: filter-drop-empty
+    - template: filter-tags
+    - template: filter-syslog
+  outputs:
+    - name: elasticsearch
+      config:
+        hosts: "127.0.0.1:9200"
+        index: logstash-%{+YYYY.MM.dd}
+        manage_template: false
+  firewall:
+    - port: 1514
+      protocol: tcp
+      src:
+        - "{{ private_ipv4.network }}/{{ private_ipv4.netmask }}"
+    - port: 4561
+      protocol: tcp
+      src:
+        - "{{ private_ipv4.network }}/{{ private_ipv4.netmask }}"

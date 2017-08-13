@@ -1,0 +1,159 @@
+---
+manage_disks:
+  enabled: true
+  defaults:
+    pesize: 4
+  volume_groups:
+    - name: mirror
+      pvs:
+        - /dev/xvdc
+  logical_volumes:
+    - name: data
+      volume_group: mirror
+      size: 95g
+      filesystem: ext4
+      filesystem_opts:
+      mount_point: /opt/data
+      mount_opts: defaults,noatime
+
+rabbitmq:
+  users:
+    - username: admin
+      password: admin
+      vhost: /
+    - username: sensu
+      password: sensu
+      vhost: /sensu
+
+sensu:
+  client:
+    enable_metrics: false
+    enable_checks: true
+    rabbitmq:
+      host: "{{ hostvars[groups['rabbitmq'][0]][private_interface]['ipv4']['address']|default('127.0.0.1') }}"
+      username: sensu
+      password: sensu
+      vhost: /sensu
+      hostgroup: sensu
+  server:
+    instances: 0
+    rabbitmq:
+      host: "{{ hostvars[groups['rabbitmq'][0]][private_interface]['ipv4']['address']|default('127.0.0.1') }}"
+      username: sensu
+      password: sensu
+      vhost: /sensu
+      hostgroup: sensu
+
+netdata_dashboard:
+  for_group: cuttle-env-infra
+  remote_interface: eth0
+  apache:
+    enabled: true
+    port: 8089
+    ip: 127.0.0.1
+    ssl:
+      enabled: False
+
+graphite:
+  amqp:
+    enabled: false
+    verbose: false
+    host: 172.16.0.15
+    port: 5672
+    vhost: /graphite
+    user: graphite
+    password: graphite
+    exchange: metrics
+  metric_name_in_body: true
+  url_prefix: /graphite/
+  path:
+    data: /opt/data/graphite
+  firewall:
+    - port: 2003
+      src: "{{ private_ipv4.network }}/{{ private_ipv4.netmask }}"
+
+grafana:
+  host: "{{ hostvars[groups['grafana'][0]][private_interface]['ipv4']['address'] }}"
+  server:
+    http_port: 3001
+    http_addr: 0.0.0.0
+    root_url: "/grafana/"
+  security:
+    enabled: true
+    admin_user: admin
+    admin_password: admin
+    anonymous: true
+    secret_key: nopenopenopenope
+
+  datasources:
+    - name: graphite
+      type: graphite
+      url: http://127.0.0.1:8081
+      access: proxy
+      database: ''
+
+  database:
+    type: mysql
+    host: "{{ database.host }}:3306"
+    name: "grafana"
+    user: "{{ database.users.grafana.username }}"
+password: "{{ database.users.grafana.password }}"
+
+percona:
+  root_password: asdf
+  galera_version: 3.x
+  client_version: 5.6
+  server_version: 5.6
+  sst_auth_user: sst_admin
+  sst_auth_password: asdf
+  wsrep_cluster_name: example-sitecontroller
+  ip: "{{ hostvars[inventory_hostname][private_interface]['ipv4']['address'] }}"
+
+apache:
+  listen:
+    - 80
+    - 443
+    - 127.0.0.1:8080
+    - 127.0.0.1:8081
+    - 127.0.0.1:8089
+
+apache_auth:
+  method: basic
+  vhost_name: control-basic
+  listen_ip: "*"
+  listen_port: 80
+  listen_ssl_port: 443
+  proxy_to: http://127.0.0.1:8080/
+  basic:
+    users:
+      - username: admin
+        password: admin
+
+control_dashboard:
+  http_redirect: False
+  apache:
+    servername: control.local
+  listen:
+    ip: "127.0.0.1"
+    port: 8080
+  locations:
+    root:
+      path: "/"
+    sensu:
+      proxy: "http://127.0.0.1:3000/"
+      url: "/sensu/"
+    grafana:
+      proxy: "http://127.0.0.1:3001/"
+      url: "/grafana/"
+    graphite:
+      proxy: "http://127.0.0.1:8081/graphite/"
+      url: "/graphite/"
+    netdata:
+      proxy: "http://127.0.0.1:8089/"
+      url: "/netdata/"
+    kibana:
+      proxy: "http://10.173.49.167:5601/"
+      url: "/kibana/"
+    elasticsearch:
+      proxy: "http://10.173.49.167:5601/"
+      url: "/kibana/elasticsearch/"
